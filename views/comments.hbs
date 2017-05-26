@@ -1,0 +1,92 @@
+<link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .comment{
+        background: #F0F0E3;
+        padding: 15px 15px 15px 47px;
+        color: #696A52;
+        border-radius: 5px;
+        box-shadow: 0 1px 2px rgba(0,0,0,.15), 0 1px 0 rgba(255,255,255,.75) inset;
+        margin-top: 10px;
+    }
+    .comment p{
+        font-weight: bold;
+       color: #DE4C1C;
+    }
+    form{
+        margin-top:  20px
+    }
+    form textarea{
+        resize: none;
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="bg-success">
+           <div style="padding-left: 20px">
+                {{ userInfo.username }}, 欢迎您！ <a href="/users/logout" class="btn text-right">退出登录</a>
+           </div>
+        </div>
+        <input type="hidden" id="userId" value="{{ userInfo.userId }}">
+    </div>
+    {{#each rows}}
+    <div class="row comment">
+      <div class="col-md-12">
+        <p>{{username}}</p>
+        <div class="form-group">
+            <div class="content" data-userId="{{userId}}" data-id={{id}}>{{comment}}</div>
+        </div>
+        
+      </div>
+    </div>
+    {{/each}}
+
+    <form action="/comments/leave" method="post">
+        <input type="hidden" name="username" value="{{ userInfo.username }}">
+        <input type="hidden" name="userId" value="{{ userInfo.userId }}">
+        <div class="form-group">
+            <textarea name="comment" class="form-control" id="" cols="30" rows="10"></textarea>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn ">留言</button>
+        </div>
+    </form>
+</div>
+
+<script src="/bootstrap/js/jquery.min.js"></script>
+
+<script>
+   
+    $('.content').dblclick  (function(){
+        var userId = $("#userId").val();
+        //判断当前的用户id与留言的用户id是否相等，只有相等才能修改
+        if($(this).data("userid") == userId){
+            $(this).attr('contenteditable', true);
+            $(this).attr('class', "form-control");
+        }
+    });
+    $('.content').focusout(function(){
+        $(this).attr('contenteditable',false);
+        $(this).removeClass("form-control");
+        
+        var id = $(this).data('id');
+        var comment = $(this).html();
+        var data = {
+            id: id,
+            comment: comment
+        };
+        
+        modifyContent(data);
+    });
+
+    function modifyContent(data){
+        $.ajax({
+            type: "POST",
+            url: '/comments/modify',
+            data,
+            success: function(data){
+                console.log(data);
+            }
+        });
+    }
+</script>
